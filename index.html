@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PTO Planner — Leave Calendar</title>
+<title>Time Wiz — Leave Calendar</title>
 <style>
   :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-  header{padding:14px 16px 10px; background:#14532d;color:#fff}
+  header{padding:14px 16px 10px; background:#123a6d;color:#fff}
   header h1{margin:0;font-size:20px}
   header p{margin:4px 0 0;opacity:.85;font-size:13px}
   main{max-width:1100px;margin:0 auto;padding:16px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
   /* Sticky balance bar — follows you down the page */
-  #balanceBar{position:sticky;top:8px;z-index:50;background:#14532d;color:#fff;border-radius:14px;
+  #balanceBar{position:sticky;top:8px;z-index:50;background:#123a6d;color:#fff;border-radius:14px;
     padding:12px;margin:0 0 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
   #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   #barTitle{display:flex;align-items:center;gap:8px;font-size:16px}
@@ -40,14 +40,14 @@
   td.holiday{background:#d23b2e;color:#fff;font-weight:700}
   td.pto{background:#35b558 !important;color:#000 !important;font-weight:700}
   td.sick{background:#2f7fd0 !important;color:#fff !important;font-weight:700}
-  td.today{outline:2px solid #14532d;outline-offset:-2px}
+  td.today{outline:2px solid #123a6d;outline-offset:-2px}
   .hidden{display:none}
 </style>
 </head>
 <body>
 <header>
-  <h1>📅 PTO Planner</h1>
-  <p>Leave calendar · v1.0 · Nov 2026 – Dec 2027</p>
+  <h1>🧙 Time Wiz</h1>
+  <p>Leave calendar · v1.1 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Sticky balances -->
@@ -71,7 +71,8 @@
     </div>
   </div>
 
-  <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 12px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b></p>
+  <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 4px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b></p>
+  <p id="holidayHint" style="text-align:center;font-size:13px;color:#555;margin:0 0 12px"><b style="color:#d23b2e">Red</b> = federal holiday</p>
 
   <section id="yearWrap" class="year"></section>
 
