@@ -3,17 +3,25 @@
 The general-public version of the Carrier Dashboard leave calendar — same
 planner, no postal anything. Formerly called PTO Planner (renamed Nov 21, 2026).
 
-## How it works (v1.1 — Nov 2026 – Dec 2027)
+## How it works (v1.2 — Nov 2026 – Dec 2027)
 - Color scheme matches Carrier Dashboard: dark blue (#123a6d) header and
   sticky balance bar, green PTO / blue Sick meters and marks, red holidays.
 - Two fillable boxes in a sticky bar that follows you down the page:
   **PTO Balance** and **Sick Balance** (hours), each with the hours left in big
   type and a thin meter of what's left (green PTO, blue Sick).
 - Tap a date once: it turns **green = PTO**. Tap again: **blue = Sick**. Tap a
-  third time: cleared. Every marked day subtracts **8 hours** from that balance,
-  live in the sticky bar (red if you plan past zero).
-- One hint line above the calendar: "Tap once for PTO, twice for Sick."
-  Under it: "Red = federal holiday."
+  third time: **gold = Holiday**. Fourth tap clears. Every PTO/Sick day subtracts
+  **8 hours** from that balance, live in the sticky bar (red if you plan past zero).
+- One hint line above the calendar: "Tap once for PTO, twice for Sick,
+  three times for Holiday." Under it: "Red = federal holiday · Gold = your holiday."
+- **Third tap = Holiday (gold):** for religious or personal holidays a job
+  gives you. It does not subtract from PTO or Sick. A fourth tap clears.
+- **Federal holidays toggle:** a controls card at the top has a
+  Federal holidays On/Off button labeled "click to toggle" — not every job
+  gives those days off. Off hides the red days and the holiday list.
+- **Themes (toggleable, saved on device):** Classic (Carrier Dashboard blue),
+  Blush (pink), Lavender, Sage, and Plain (gray). Theme changes the header,
+  sticky balance bar, page background, and borders.
 - **Federal holidays are red.** Weekends (Sat/Sun) are shaded and can't be
   marked — most people are already off. No payday markers (those vary by
   employer) and no color/rotation picker (that was the postal schedule).

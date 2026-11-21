@@ -5,16 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Time Wiz — Leave Calendar</title>
 <style>
-  :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff}
+  :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff;--brand:#123a6d;--brand-soft:#eef3fa}
+  body[data-theme="blush"]{--brand:#b84a6f;--brand-soft:#fdeef3;--bg:#fdf3f6;--line:#f0d3dd}
+  body[data-theme="lavender"]{--brand:#6553a6;--brand-soft:#f0ecfb;--bg:#f6f3fd;--line:#ddd3f2}
+  body[data-theme="plain"]{--brand:#3f3f3f;--brand-soft:#f0f0f0;--bg:#f5f5f5;--line:#ddd}
+  body[data-theme="sage"]{--brand:#47755a;--brand-soft:#ecf4ee;--bg:#f3f7f3;--line:#cfdfd2}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-  header{padding:14px 16px 10px; background:#123a6d;color:#fff}
+  header{padding:14px 16px 10px; background:var(--brand);color:#fff}
   header h1{margin:0;font-size:20px}
   header p{margin:4px 0 0;opacity:.85;font-size:13px}
   main{max-width:1100px;margin:0 auto;padding:16px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
   /* Sticky balance bar — follows you down the page */
-  #balanceBar{position:sticky;top:8px;z-index:50;background:#123a6d;color:#fff;border-radius:14px;
+  #balanceBar{position:sticky;top:8px;z-index:50;background:var(--brand);color:#fff;border-radius:14px;
     padding:12px;margin:0 0 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
   #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   #barTitle{display:flex;align-items:center;gap:8px;font-size:16px}
@@ -40,16 +44,40 @@
   td.holiday{background:#d23b2e;color:#fff;font-weight:700}
   td.pto{background:#35b558 !important;color:#000 !important;font-weight:700}
   td.sick{background:#2f7fd0 !important;color:#fff !important;font-weight:700}
-  td.today{outline:2px solid #123a6d;outline-offset:-2px}
+  td.phol{background:#e9a13b !important;color:#000 !important;font-weight:700}
+  td.today{outline:2px solid var(--brand);outline-offset:-2px}
+  .controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;justify-content:space-between}
+  .controls .grp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .controls .lbl{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #themeBtns{display:flex;gap:8px;flex-wrap:wrap}
+  .themeBtn{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px 6px 8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
+  .themeBtn .dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.25);display:inline-block}
+  .themeBtn.active{border-color:var(--brand);font-weight:700}
+  .toggleBtn{border:none;background:var(--brand);color:#fff;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:700;min-width:64px}
+  .toggleBtn.off{background:#bbb;color:#222}
+  .clickNote{font-size:12px;color:var(--muted)}
   .hidden{display:none}
 </style>
 </head>
 <body>
 <header>
   <h1>🧙 Time Wiz</h1>
-  <p>Leave calendar · v1.1 · Nov 2026 – Dec 2027</p>
+  <p>Leave calendar · v1.2 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
+  <!-- Controls: theme + federal holidays -->
+  <section class="card controls" style="padding:12px 14px">
+    <div class="grp">
+      <span class="lbl">Theme</span>
+      <span id="themeBtns"></span>
+    </div>
+    <div class="grp">
+      <span class="lbl">Federal holidays</span>
+      <button id="fedToggle" class="toggleBtn" type="button">On</button>
+      <span class="clickNote">click to toggle</span>
+    </div>
+  </section>
+
   <!-- Sticky balances -->
   <div id="balanceBar">
     <div class="barTop">
@@ -71,12 +99,13 @@
     </div>
   </div>
 
-  <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 4px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b></p>
-  <p id="holidayHint" style="text-align:center;font-size:13px;color:#555;margin:0 0 12px"><b style="color:#d23b2e">Red</b> = federal holiday</p>
+  <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 4px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b>, three times for <b style="color:#b97a1a">Holiday</b></p>
+  <p id="holidayHint" style="text-align:center;font-size:13px;color:#555;margin:0 0 4px"><b style="color:#d23b2e">Red</b> = federal holiday &nbsp;·&nbsp; <b style="color:#b97a1a">Gold</b> = your holiday</p>
+  <p style="text-align:center;font-size:12px;color:#888;margin:0 0 12px">Use Holiday for religious or personal holidays your job gives you — it doesn't use your PTO or Sick balance. A fourth tap clears it.</p>
 
   <section id="yearWrap" class="year"></section>
 
-  <section class="card">
+  <section class="card" id="holidayListCard">
     <h3 style="margin-top:0">Federal Holidays (Nov 2026 – Dec 2027)</h3>
     <ul id="holidayList" style="margin:0;padding-left:18px;line-height:1.8;font-size:14px"></ul>
     <p style="font-size:12px;color:#666">Weekends are shaded — most people are already off. Whether your employer observes every federal holiday is up to them.</p>
@@ -100,13 +129,13 @@ const holidayName = Object.fromEntries(HOLIDAYS);
 
 // ---- Leave state (saved on this device) ----
 const HOURS_PER_DAY = 8;
-let state = {pto:'', sick:'', marks:{}}; // marks: iso -> 'PTO' | 'SICK'
+let state = {pto:'', sick:'', marks:{}, theme:'classic', showFederal:true}; // marks: iso -> 'PTO' | 'SICK' | 'HOLIDAY'
 try {
   const savedState = JSON.parse(localStorage.getItem('ptoPlanner')||'null');
   if (savedState && typeof savedState==='object') state = Object.assign(state, savedState);
 } catch(e){}
 function save(){ localStorage.setItem('ptoPlanner', JSON.stringify(state)); }
-function cycleMark(cur){ return cur==null ? 'PTO' : cur==='PTO' ? 'SICK' : null; } // tap: none -> PTO -> Sick -> none
+function cycleMark(cur){ return cur==null ? 'PTO' : cur==='PTO' ? 'SICK' : cur==='SICK' ? 'HOLIDAY' : null; } // tap: none -> PTO -> Sick -> Holiday -> none
 function markCounts(){
   let pto=0, sick=0;
   for (const k in state.marks){ if (state.marks[k]==='PTO') pto++; else if (state.marks[k]==='SICK') sick++; }
@@ -127,10 +156,11 @@ function paintCell(td){
   const mark = state.marks[key];
   if (mark==='PTO') td.classList.add('pto');
   else if (mark==='SICK') td.classList.add('sick');
-  else if (holidaySet.has(key)) td.classList.add('holiday');
+  else if (mark==='HOLIDAY') td.classList.add('phol');
+  else if (state.showFederal && holidaySet.has(key)) td.classList.add('holiday');
   const today = new Date(); today.setHours(0,0,0,0);
   if (d.toDateString()===today.toDateString()) td.classList.add('today');
-  td.title = holidaySet.has(key) ? holidayName[key] : '';
+  td.title = mark==='HOLIDAY' ? 'Your holiday' : (state.showFederal && holidaySet.has(key) ? holidayName[key] : '');
 }
 
 function updateBalances(){
@@ -165,7 +195,7 @@ function renderYear(){
   updateBalances();
 }
 
-// Tap a date: cycle PTO -> Sick -> clear, balances drop 8 hrs per marked day
+// Tap a date: cycle PTO -> Sick -> Holiday -> clear, balances drop 8 hrs per PTO/Sick day only
 document.getElementById('yearWrap').addEventListener('click', e=>{
   const td = e.target.closest('td[data-date]');
   if (!td || td.classList.contains('wknd')) return;
@@ -181,7 +211,45 @@ document.getElementById('sickInput').addEventListener('input', e=>{ state.sick=e
 document.getElementById('holidayList').innerHTML =
   HOLIDAYS.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
 
+
+// ---- Themes ----
+const THEMES = [
+  ['classic','Classic','#123a6d'],
+  ['blush','Blush','#b84a6f'],
+  ['lavender','Lavender','#6553a6'],
+  ['sage','Sage','#47755a'],
+  ['plain','Plain','#3f3f3f'],
+];
+function applyTheme(){
+  if (!THEMES.some(t=>t[0]===state.theme)) state.theme='classic';
+  document.body.dataset.theme = state.theme;
+  document.querySelectorAll('.themeBtn').forEach(b=>b.classList.toggle('active', b.dataset.theme===state.theme));
+}
+const tb = document.getElementById('themeBtns');
+THEMES.forEach(([key,name,hex])=>{
+  const b=document.createElement('button');
+  b.type='button'; b.className='themeBtn'; b.dataset.theme=key;
+  b.innerHTML=`<span class="dot" style="background:${hex}"></span>${name}`;
+  b.onclick=()=>{ state.theme=key; save(); applyTheme(); };
+  tb.appendChild(b);
+});
+
+// ---- Federal holidays toggle (click to toggle) ----
+function applyFederal(){
+  const btn = document.getElementById('fedToggle');
+  btn.textContent = state.showFederal ? 'On' : 'Off';
+  btn.classList.toggle('off', !state.showFederal);
+  document.querySelectorAll('td[data-date]').forEach(paintCell);
+  const hl = document.getElementById('holidayListCard');
+  if (hl) hl.style.display = state.showFederal ? '' : 'none';
+}
+document.getElementById('fedToggle').addEventListener('click', ()=>{
+  state.showFederal = !state.showFederal; save(); applyFederal();
+});
+
+applyTheme();
 renderYear();
+applyFederal();
 </script>
 </body>
 </html>
