@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PTO Planner — Leave Calendar</title>
+<style>
+  :root{--ink:#1a1a1a;--muted:#666;--line:#ddd;--bg:#f7f7f5;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:14px 16px 10px; background:#14532d;color:#fff}
+  header h1{margin:0;font-size:20px}
+  header p{margin:4px 0 0;opacity:.85;font-size:13px}
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  /* Sticky balance bar — follows you down the page */
+  #balanceBar{position:sticky;top:8px;z-index:50;background:#14532d;color:#fff;border-radius:14px;
+    padding:12px;margin:0 0 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  #barTitle{display:flex;align-items:center;gap:8px;font-size:16px}
+  #balanceBar .barGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .balPanel{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px}
+  .balLabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+  .balLeft{margin:4px 0 6px;font-size:14px}
+  .balLeft b{font-size:25px;margin-right:5px}
+  .balMeter{height:6px;background:rgba(255,255,255,.22);border-radius:3px;overflow:hidden;margin-bottom:9px}
+  .balMeter i{display:block;height:100%;border-radius:3px;transition:width .2s}
+  .ptoPanel .balMeter i{background:#35b558}
+  .sickPanel .balMeter i{background:#6db1f2}
+  .balInput{display:flex;align-items:center;gap:6px;font-size:13px;opacity:.95}
+  .balInput input{width:72px;font-size:16px;padding:5px 7px;border-radius:7px;border:none;color:#1a1a1a}
+  .year{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .month{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+  .month h3{margin:2px 0 8px;text-align:center;letter-spacing:.06em;font-size:14px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  th{font-size:11px;color:var(--muted);padding:3px 0}
+  td{text-align:center;font-size:14.5px;padding:6px 0;border-radius:5px;height:32px}
+  td.day{cursor:pointer}
+  td.wknd{color:#999;background:#f0f0f0;cursor:default}
+  td.holiday{background:#d23b2e;color:#fff;font-weight:700}
+  td.pto{background:#35b558 !important;color:#000 !important;font-weight:700}
+  td.sick{background:#2f7fd0 !important;color:#fff !important;font-weight:700}
+  td.today{outline:2px solid #14532d;outline-offset:-2px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>📅 PTO Planner</h1>
+  <p>Leave calendar · v1.0 · Nov 2026 – Dec 2027</p>
+</header>
+<main>
+  <!-- Sticky balances -->
+  <div id="balanceBar">
+    <div class="barTop">
+      <span id="barTitle"><b>My Leave</b></span>
+    </div>
+    <div class="barGrid">
+      <div class="balPanel ptoPanel">
+        <div class="balLabel">Paid Time Off · PTO</div>
+        <div class="balLeft"><b id="ptoLeft">—</b>left</div>
+        <div class="balMeter"><i id="ptoMeter"></i></div>
+        <label class="balInput">Balance <input id="ptoInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"> hrs</label>
+      </div>
+      <div class="balPanel sickPanel">
+        <div class="balLabel">Sick Time · Sick</div>
+        <div class="balLeft"><b id="sickLeft">—</b>left</div>
+        <div class="balMeter"><i id="sickMeter"></i></div>
+        <label class="balInput">Balance <input id="sickInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0"> hrs</label>
+      </div>
+    </div>
+  </div>
+
+  <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 12px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b></p>
+
+  <section id="yearWrap" class="year"></section>
+
+  <section class="card">
+    <h3 style="margin-top:0">Federal Holidays (Nov 2026 – Dec 2027)</h3>
+    <ul id="holidayList" style="margin:0;padding-left:18px;line-height:1.8;font-size:14px"></ul>
+    <p style="font-size:12px;color:#666">Weekends are shaded — most people are already off. Whether your employer observes every federal holiday is up to them.</p>
+  </section>
+</main>
+
+<script>
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+// US federal holidays in the Nov 2026 – Dec 2027 window (observed dates)
+const HOLIDAYS = [
+  ['2026-11-11','Veterans Day'],['2026-11-26','Thanksgiving'],['2026-12-25','Christmas Day'],
+  ['2027-01-01',"New Year's Day"],['2027-01-18','MLK Jr. Day'],['2027-02-15',"Presidents' Day"],
+  ['2027-05-31','Memorial Day'],['2027-06-19','Juneteenth'],['2027-07-05','Independence Day (observed)'],
+  ['2027-09-06','Labor Day'],['2027-10-11','Columbus Day'],['2027-11-11','Veterans Day'],
+  ['2027-11-25','Thanksgiving'],['2027-12-25','Christmas Day'],
+];
+const holidaySet = new Set(HOLIDAYS.map(h=>h[0]));
+const holidayName = Object.fromEntries(HOLIDAYS);
+
+// ---- Leave state (saved on this device) ----
+const HOURS_PER_DAY = 8;
+let state = {pto:'', sick:'', marks:{}}; // marks: iso -> 'PTO' | 'SICK'
+try {
+  const savedState = JSON.parse(localStorage.getItem('ptoPlanner')||'null');
+  if (savedState && typeof savedState==='object') state = Object.assign(state, savedState);
+} catch(e){}
+function save(){ localStorage.setItem('ptoPlanner', JSON.stringify(state)); }
+function cycleMark(cur){ return cur==null ? 'PTO' : cur==='PTO' ? 'SICK' : null; } // tap: none -> PTO -> Sick -> none
+function markCounts(){
+  let pto=0, sick=0;
+  for (const k in state.marks){ if (state.marks[k]==='PTO') pto++; else if (state.marks[k]==='SICK') sick++; }
+  return {pto, sick};
+}
+function remaining(){
+  const {pto, sick} = markCounts();
+  const ptoBal = parseFloat(state.pto)||0, sickBal = parseFloat(state.sick)||0;
+  return {ptoLeft: ptoBal - pto*HOURS_PER_DAY, sickLeft: sickBal - sick*HOURS_PER_DAY, ptoDays: pto, sickDays: sick};
+}
+
+function paintCell(td){
+  const key = td.dataset.date;
+  const d = new Date(key+'T12:00:00'), wd = d.getDay();
+  td.className = '';
+  if (wd===0 || wd===6){ td.className='wknd'; return; }
+  td.classList.add('day');
+  const mark = state.marks[key];
+  if (mark==='PTO') td.classList.add('pto');
+  else if (mark==='SICK') td.classList.add('sick');
+  else if (holidaySet.has(key)) td.classList.add('holiday');
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d.toDateString()===today.toDateString()) td.classList.add('today');
+  td.title = holidaySet.has(key) ? holidayName[key] : '';
+}
+
+function updateBalances(){
+  const r = remaining();
+  const ptoBal = parseFloat(state.pto)||0, sickBal = parseFloat(state.sick)||0;
+  const ptoEl = document.getElementById('ptoLeft'), sickEl = document.getElementById('sickLeft');
+  ptoEl.textContent = r.ptoLeft + ' hrs';
+  sickEl.textContent = r.sickLeft + ' hrs';
+  ptoEl.style.color = r.ptoLeft < 0 ? '#ff9c9c' : '';
+  sickEl.style.color = r.sickLeft < 0 ? '#ff9c9c' : '';
+  document.getElementById('ptoMeter').style.width = ptoBal>0 ? Math.max(0, Math.min(100, r.ptoLeft/ptoBal*100)) + '%' : '0%';
+  document.getElementById('sickMeter').style.width = sickBal>0 ? Math.max(0, Math.min(100, r.sickLeft/sickBal*100)) + '%' : '0%';
+}
+
+function renderYear(){
+  document.getElementById('ptoInput').value = state.pto;
+  document.getElementById('sickInput').value = state.sick;
+  const wrap = document.getElementById('yearWrap'); wrap.innerHTML='';
+  for (let mi=0; mi<14; mi++){
+    const first = new Date(2026,10+mi,1), m = first.getMonth(), y = first.getFullYear(), days = new Date(y,m+1,0).getDate();
+    let html = `<div class="month"><h3>${first.toLocaleDateString('en-US',{month:'long'}).toUpperCase()} ${y}</h3><table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>`;
+    for (let i=0;i<first.getDay();i++) html+='<td></td>';
+    for (let day=1;day<=days;day++){
+      const d = new Date(y,m,day), wd=d.getDay(), key=iso(d);
+      html+=`<td data-date="${key}">${day}</td>`;
+      if (wd===6 && day<days) html+='</tr><tr>';
+    }
+    html+='</tr></table></div>';
+    wrap.innerHTML+=html;
+  }
+  wrap.querySelectorAll('td[data-date]').forEach(paintCell);
+  updateBalances();
+}
+
+// Tap a date: cycle PTO -> Sick -> clear, balances drop 8 hrs per marked day
+document.getElementById('yearWrap').addEventListener('click', e=>{
+  const td = e.target.closest('td[data-date]');
+  if (!td || td.classList.contains('wknd')) return;
+  const key = td.dataset.date;
+  const next = cycleMark(state.marks[key]||null);
+  if (next) state.marks[key]=next; else delete state.marks[key];
+  save(); paintCell(td); updateBalances();
+});
+document.getElementById('ptoInput').addEventListener('input', e=>{ state.pto=e.target.value; save(); updateBalances(); });
+document.getElementById('sickInput').addEventListener('input', e=>{ state.sick=e.target.value; save(); updateBalances(); });
+
+// Holiday list
+document.getElementById('holidayList').innerHTML =
+  HOLIDAYS.map(([k,n])=>`<li>${fmt(new Date(k+'T12:00:00'))} — ${n}</li>`).join('');
+
+renderYear();
+</script>
+</body>
+</html>
