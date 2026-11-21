@@ -3,7 +3,7 @@
 The general-public version of the Carrier Dashboard leave calendar — same
 planner, no postal anything. Formerly called PTO Planner (renamed Nov 21, 2026).
 
-## How it works (v1.3 — Nov 2026 – Dec 2027)
+## How it works (v1.4 — Nov 2026 – Dec 2027)
 - Color scheme matches Carrier Dashboard: dark blue (#123a6d) header and
   sticky balance bar, green PTO / blue Sick meters and marks, red holidays.
 - Two fillable boxes in a sticky bar that follows you down the page:
@@ -18,8 +18,10 @@ planner, no postal anything. Formerly called PTO Planner (renamed Nov 21, 2026).
   other holidays a job gives you. It does not subtract from PTO or Sick.
   A fourth tap clears.
 - **Federal holidays are always on** — there is no toggle — and you can tap
-  through them like any other day (PTO → Sick → Holiday → back to the
-  federal holiday in red).
+  through them like any other day (PTO → Sick → Holiday → **blank** → back
+  to the federal holiday in red). The blank stop (an `OFF` mark) is how you
+  clear a federal holiday your job doesn't give you; fixed in v1.4 after
+  Thomas found you couldn't cycle a federal holiday to blank.
 - **Theme button cycles through themes (saved on device), no color picking:**
   Classic (Carrier Dashboard blue), Blush (pink), Lavender, Sage, Peach,
   Ocean, Berry, Sky, and Plain (gray). Each click on the Theme button moves

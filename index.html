@@ -61,7 +61,7 @@
 <body>
 <header>
   <h1>🧙 Time Wiz</h1>
-  <p>Leave calendar · v1.3 · Nov 2026 – Dec 2027</p>
+  <p>Leave calendar · v1.4 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Controls: theme (click to cycle through) -->
@@ -96,7 +96,7 @@
 
   <p id="tapHint" style="text-align:center;font-size:14px;color:#555;margin:2px 0 4px">Tap once for <b style="color:#1d7a3a">PTO</b>, twice for <b style="color:#2f7fd0">Sick</b>, three times for <b style="color:#d23b2e">Holiday</b></p>
   <p id="holidayHint" style="text-align:center;font-size:13px;color:#555;margin:0 0 4px"><b style="color:#d23b2e">Red</b> = holiday</p>
-  <p style="text-align:center;font-size:12px;color:#888;margin:0 0 12px">Use Holiday for religious or other holidays your job gives you — it doesn't use your PTO or Sick balance. A fourth tap clears it. Federal holidays are always shown, and you can tap through them like any other day.</p>
+  <p style="text-align:center;font-size:12px;color:#888;margin:0 0 12px">Use Holiday for religious or other holidays your job gives you — it doesn't use your PTO or Sick balance. A fourth tap clears it. Federal holidays are always shown and you can tap through them like any other day — keep tapping to blank one out if your job doesn't give it, tap again to bring it back.</p>
 
   <section id="yearWrap" class="year"></section>
 
@@ -124,13 +124,19 @@ const holidayName = Object.fromEntries(HOLIDAYS);
 
 // ---- Leave state (saved on this device) ----
 const HOURS_PER_DAY = 8;
-let state = {pto:'', sick:'', marks:{}, theme:'classic'}; // marks: iso -> 'PTO' | 'SICK' | 'HOLIDAY'
+let state = {pto:'', sick:'', marks:{}, theme:'classic'}; // marks: iso -> 'PTO' | 'SICK' | 'HOLIDAY' | 'OFF' (OFF = a federal holiday blanked out)
 try {
   const savedState = JSON.parse(localStorage.getItem('ptoPlanner')||'null');
   if (savedState && typeof savedState==='object') state = Object.assign(state, savedState);
 } catch(e){}
 function save(){ localStorage.setItem('ptoPlanner', JSON.stringify(state)); }
-function cycleMark(cur){ return cur==null ? 'PTO' : cur==='PTO' ? 'SICK' : cur==='SICK' ? 'HOLIDAY' : null; } // tap: none -> PTO -> Sick -> Holiday -> none
+function cycleMark(cur, isFederal){
+  if (cur==null) return 'PTO';
+  if (cur==='PTO') return 'SICK';
+  if (cur==='SICK') return 'HOLIDAY';
+  if (cur==='HOLIDAY') return isFederal ? 'OFF' : null; // federal days: one more stop blanks them out
+  return null; // OFF -> back to the federal holiday (red)
+} // normal day: none -> PTO -> Sick -> Holiday -> none | federal day: federal -> PTO -> Sick -> Holiday -> blank (OFF) -> federal
 function markCounts(){
   let pto=0, sick=0;
   for (const k in state.marks){ if (state.marks[k]==='PTO') pto++; else if (state.marks[k]==='SICK') sick++; }
@@ -152,10 +158,11 @@ function paintCell(td){
   if (mark==='PTO') td.classList.add('pto');
   else if (mark==='SICK') td.classList.add('sick');
   else if (mark==='HOLIDAY') td.classList.add('phol');
+  else if (mark==='OFF') { /* blanked-out federal holiday: show as a plain day */ }
   else if (holidaySet.has(key)) td.classList.add('holiday');
   const today = new Date(); today.setHours(0,0,0,0);
   if (d.toDateString()===today.toDateString()) td.classList.add('today');
-  td.title = mark==='HOLIDAY' ? 'Holiday' : (holidaySet.has(key) ? holidayName[key] : '');
+  td.title = mark==='HOLIDAY' ? 'Holiday' : mark==='OFF' ? '' : (holidaySet.has(key) ? holidayName[key] : '');
 }
 
 function updateBalances(){
@@ -190,12 +197,12 @@ function renderYear(){
   updateBalances();
 }
 
-// Tap a date: cycle PTO -> Sick -> Holiday -> clear, balances drop 8 hrs per PTO/Sick day only
+// Tap a date: cycle PTO -> Sick -> Holiday -> clear (federal days get a blank stop, then back to red), balances drop 8 hrs per PTO/Sick day only
 document.getElementById('yearWrap').addEventListener('click', e=>{
   const td = e.target.closest('td[data-date]');
   if (!td || td.classList.contains('wknd')) return;
   const key = td.dataset.date;
-  const next = cycleMark(state.marks[key]||null);
+  const next = cycleMark(state.marks[key]||null, holidaySet.has(key));
   if (next) state.marks[key]=next; else delete state.marks[key];
   save(); paintCell(td); updateBalances();
 });
