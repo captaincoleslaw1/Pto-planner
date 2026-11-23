@@ -26,6 +26,8 @@
     padding:12px;margin:0 0 14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
   #balanceBar .barTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   #barTitle{display:flex;align-items:center;gap:8px;font-size:16px}
+  #balanceBar #resetBtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;
+    border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;text-decoration:none}
   #balanceBar .barGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
   .balPanel{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;min-width:0;overflow:hidden}
   .balLabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -61,7 +63,7 @@
 <body>
 <header>
   <h1>🧙 Time Wiz</h1>
-  <p>Leave calendar · v1.5 · Nov 2026 – Dec 2027</p>
+  <p>Leave calendar · v1.6 · Nov 2026 – Dec 2027</p>
 </header>
 <main>
   <!-- Controls: theme (click to cycle through) -->
@@ -77,6 +79,7 @@
   <div id="balanceBar">
     <div class="barTop">
       <span id="barTitle"><b>My Leave</b></span>
+      <button id="resetBtn" type="button">Reset</button>
     </div>
     <div class="barGrid">
       <div class="balPanel ptoPanel">
@@ -205,6 +208,11 @@ document.getElementById('yearWrap').addEventListener('click', e=>{
   if (next) state.marks[key]=next; else delete state.marks[key];
   save(); paintCell(td); updateBalances();
 });
+document.getElementById('resetBtn').onclick=()=>{
+  if (!Object.keys(state.marks).length) return;
+  if (!confirm('Clear all your marked PTO/Sick/Holiday days? Your balances stay as entered.')) return;
+  state.marks={}; save(); renderYear(); updateBalances();
+};
 document.getElementById('ptoInput').addEventListener('input', e=>{ state.pto=e.target.value; save(); updateBalances(); });
 document.getElementById('sickInput').addEventListener('input', e=>{ state.sick=e.target.value; save(); updateBalances(); });
 

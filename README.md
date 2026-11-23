@@ -3,7 +3,7 @@
 The general-public version of the Carrier Dashboard leave calendar — same
 planner, no postal anything. Formerly called PTO Planner (renamed Nov 21, 2026).
 
-## How it works (v1.5 — Nov 2026 – Dec 2027)
+## How it works (v1.6 — Nov 2026 – Dec 2027)
 - Color scheme matches Carrier Dashboard: dark blue (#123a6d) header and
   sticky balance bar, green PTO / blue Sick meters and marks, red holidays.
 - Two fillable boxes in a sticky bar that follows you down the page:
@@ -30,6 +30,10 @@ planner, no postal anything. Formerly called PTO Planner (renamed Nov 21, 2026).
 - **Federal holidays are red.** Weekends (Sat/Sun) are shaded and can't be
   marked — most people are already off. No payday markers (those vary by
   employer) and no color/rotation picker (that was the postal schedule).
+- **Reset button** in the sticky bar (right of "My Leave"), same as Carrier
+  Dashboard's: clears all marked days (PTO / Sick / Holiday / blanked-out
+  federal days) but keeps the entered balances and the chosen theme. It asks
+  first with a confirm prompt and does nothing when no days are marked.
 - v1.5 fixes: the balance card no longer overflows on the right on narrow
   phones (grid panels can now shrink, the balance input flexes to fit), and
   the "Use Holiday for..." explanation paragraph under the hints is removed.
